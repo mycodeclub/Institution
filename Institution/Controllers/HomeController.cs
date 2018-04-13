@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web;
@@ -38,7 +39,7 @@ namespace Institution.Controllers
         // GET: Home/Create
         public ActionResult Create()
         {
-            return View();
+            return View(new Student());
         }
 
         // POST: Home/Create
@@ -48,21 +49,22 @@ namespace Institution.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "StudentId,FirstName,LastName,FatherName,MotherName,DOB,Email,Phone,ImageUpload")] Student student)
         {
+            string validImageFormets = @"bmp, jpg, jpeg, gif, png";
             if (ModelState.IsValid)
             {
-                if (student.ImageUpload == null || student.ImageUpload.ContentLength == 0)
+                if (student.ImageUpload == null || student.ImageUpload.ContentLength == 0) ModelState.AddModelError("ImageUpload", "This field is required");
+                else if (!validImageFormets.Contains(student.ImageUpload.FileName.Split('.').Last())) ModelState.AddModelError("ImageUpload", "Upload a valid image, allowed formats are : " + validImageFormets);
+                else
                 {
-                    ModelState.AddModelError("ImageUpload", "This field is required");
+                    var fileName = DateTime.UtcNow.ToString().Replace(" ", string.Empty).Replace(":", string.Empty).Replace("/", string.Empty) + student.ImageUpload.FileName.Replace(" ", string.Empty);
+                    student.ImageUrl = @"\images\" + fileName;
+                    student.ImageUpload.SaveAs(Server.MapPath("~/images/" + fileName));
+                    db.Students.Add(student);
+                    if (student.StudentId > 0) db.Entry(student).State = EntityState.Modified;
+                    db.SaveChanges();
+                    return RedirectToAction("Index");
                 }
-                //else if (!imageTypes.Contains(student.ImageUpload.ContentType))
-                //{
-                //    ModelState.AddModelError("ImageUpload", "Please choose either a GIF, JPG or PNG image.
-                //}
-                db.Students.Add(student);
-                db.SaveChanges();
-                return RedirectToAction("Index");
             }
-
             return View(student);
         }
 
@@ -78,23 +80,7 @@ namespace Institution.Controllers
             {
                 return HttpNotFound();
             }
-            return View(student);
-        }
-
-        // POST: Home/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "StudentId,FirstName,LastName,FatherName,MotherName,DOB,Email,Phone,ImageUrl")] Student student)
-        {
-            if (ModelState.IsValid)
-            {
-                db.Entry(student).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            return View(student);
+            return View("Create", student);
         }
 
         // GET: Home/Delete/5
@@ -131,5 +117,6 @@ namespace Institution.Controllers
             }
             base.Dispose(disposing);
         }
+
     }
 }
