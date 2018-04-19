@@ -219,6 +219,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\CommonProperties.cs" />
     <Compile Include="Models\InstitutionContext.cs" />
     <Compile Include="Models\Students.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

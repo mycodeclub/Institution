@@ -47,9 +47,10 @@ namespace Institution.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "StudentId,FirstName,LastName,FatherName,MotherName,DOB,Email,Phone,ImageUpload")] Student student)
+        public ActionResult Create([Bind(Include = "StudentId,FirstName,LastName,FatherName,MotherName,DOB,Email,Phone,ImageUpload,Gender")] Student student)
         {
             string validImageFormets = @"bmp, jpg, jpeg, gif, png";
+
             if (ModelState.IsValid)
             {
                 if (student.ImageUpload == null || student.ImageUpload.ContentLength == 0) ModelState.AddModelError("ImageUpload", "This field is required");
